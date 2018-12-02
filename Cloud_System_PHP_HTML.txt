@@ -1,0 +1,334 @@
+//========================================================
+Trilateration and GPS
+//========================================================
+
+
+<?php
+$servername = "localhost";
+$username = "raul";
+$password = "2Jsfdpx3bTVcd4jxhn6rGdQ";
+$dbname = "raul";
+
+        $d1=0.2255*(exp(0.2531*($_GET['d1'])));
+        $d2=0.1921*(exp(0.3031*($_GET['d2'])));
+        $d3=0.2115*(exp(0.2966*($_GET['d3'])));
+        $espf1=$_GET['espf1'];
+        $espf2=$_GET['espf2'];
+        $espf3=$_GET['espf3'];
+        $espl1=$_GET['espl1'];
+        $espl2=$_GET['espl2'];
+        $espl3=$_GET['espl3'];
+        $latitude=$_GET['latitude'];
+        $longitude=$_GET['longitude'];
+
+        echo "OK: ";
+        echo "<br><br>";
+
+        // Create connection
+        $conn = mysqli_connect($servername, $username, $password, $dbname);
+
+        // Check connection
+        if (!$conn) {
+            die("Connection failed: " . mysqli_connect_error());
+        }
+
+        //================ INERT ========================
+        $sql = "INSERT INTO raul_teste4 (d1, d2, d3, espf1, espf2, espf3, espl1, espl2, espl3, latitude, longitude, ts) VALUES ('$d1', '$d2', '$d3', '$espf1', '$espf2', '$espf3', '$espl1', '$espl2', '$espl3', '$latitude', '$longitude', now())";
+
+
+
+        if (mysqli_query($conn, $sql)) {
+            echo "1: New record created successfully";
+            echo "<br><br>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
+                $exp1 = (27.55 - (20 * log10($espf1)) + abs($espl1)) / 20.0;
+                $espd11 =(pow(10.0, $exp1));
+                $espd1 = (0.0401*$espd11)-0.1307;
+
+                $exp2 = (27.55 - (20 * log10($espf2)) + abs($espl2)) / 20.0;
+                $espd22 = (pow(10.0, $exp2));
+                $espd2 = (0.0401*$espd22)-0.1307;
+
+                $exp3 = (27.55 - (20 * log10($espf3)) + abs($espl3)) / 20.0;
+                $espd33 = (pow(10.0, $exp3));
+                $espd3 = (0.0401*$espd33)-0.1307;
+
+        $sql = "INSERT INTO raul_teste9 (d1, d2, d3, desp1, desp2, desp3, ts) VALUES ('$d1', '$d2', '$d3', '$espd1', '$espd2', '$espd3', now())";
+
+        if (mysqli_query($conn, $sql)) {
+            echo "1: New record created successfully";
+            echo "<br><br>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
+        $x1 = 2;
+        $y1 = 0;
+        $x2 = 2;
+        $y2 = 3;
+        $x3 = 0.5;
+        $y3 = 1;
+
+        $A = (-2*$x1) + (2*$x2);
+        $B = (-2*$y1) + (2*$y2);
+        $D = (-2*$x2) + (2*$x3);
+        $E = (-2*$y2) + (2*$y3);
+        $C = pow($espd1,2) - (pow($espd2,2)) - (pow($x1,2)) + pow($x2,2) - (pow($y1,2)) + pow($y2,2);
+        $F = pow($espd2,2) - (pow($espd3,2)) - (pow($x2,2)) + pow($x3,2) - (pow($y2,2)) + pow($y3,2);
+
+        if((($B*$D) - ($E*$A)) != 0)
+        {
+               $Xwifi = (($E*$C) - ($B*$F))/(($E*$A) - ($B*$D));
+                $Ywifi = (($C*$D) - ($A*$F))/(($B*$D) - ($E*$A));
+        }
+        else
+        {
+                $Xwifi = 0;
+                $Ywifi = 0;
+        }
+
+        $x_1 = 2;
+        $y_1 = 0;
+        $x_2 = 2;
+        $y_2 = 3;
+        $x_3 = 0.5;
+        $y_3 = 1;
+
+        $A_ = (-2*$x_1) + (2*$x_2);
+        $B_ = (-2*$y_1) + (2*$y_2);
+        $D_ = (-2*$x_2) + (2*$x_3);
+        $E_ = (-2*$y_2) + (2*$y_3);
+        $C_ = pow($d1,2) - (pow($d2,2)) - (pow($x_1,2)) + pow($x_2,2) - (pow($y_1,2)) + pow($y_2,2);
+        $F_ = pow($d2,2) - (pow($d3,2)) - (pow($x_2,2)) + pow($x_3,2) - (pow($y_2,2)) + pow($y_3,2);
+
+        if((($B_*$D_) - ($E_*$A_)) != 0)
+        {
+                $Xbeacon = (($E_*$C_) - ($B_*$F_))/(($E_*$A_) - ($B_*$D_));
+                $Ybeacon = (($C_*$D_) - ($A_*$F_))/(($B_*$D_) - ($E_*$A_));
+        }
+        else
+        {
+                $Xbeacon = 0;
+                $Ybeacon = 0;
+        }
+
+        $sql = "INSERT INTO raul_teste5 (Xbeacon, Ybeacon, Xwifi, Ywifi, latitude, longitude, ts) VALUES ('$Xbeacon', '$Ybeacon', '$Xwifi', '$Ywifi', '$latitude', '$longitude', now())";
+
+
+
+        if (mysqli_query($conn, $sql)) {
+            echo "2: New record created successfully";
+            echo "<br><br>";
+ } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
+
+        mysqli_close($conn);
+?>
+
+
+
+//========================================================
+Live graph
+//========================================================
+
+<?php
+
+$servername = "localhost";
+$username = "raul";
+$password = "2Jsfdpx3bTVcd4jxhn6rGdQ";
+$dbname = "raul";
+
+        echo "OK: ";
+        echo "<br><br>";
+
+        // Create connection
+        $conn = mysqli_connect($servername, $username, $password, $dbname);
+
+        // Check connection
+        if (!$conn) {
+            die("Connection failed: " . mysqli_connect_error());
+        }
+
+$hourMin = date('Y-m-d');
+$ss = date('s');
+$mm = date('H:i');
+
+$sql = "SELECT latitude, longitude, DATE_FORMAT(ts, '%Y-%m%-%dT%H:%i:%s') as ts FROM raul_GPS order by ts desc limit 5";
+
+        if (mysqli_query($conn, $sql)) {
+            echo "1: New record created successfully";
+            echo "<br><br>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
+
+ $result = mysqli_query($conn, $sql);
+
+        if (mysqli_num_rows($result) > 0) {
+        while($r = mysqli_fetch_assoc($result)) {
+
+        $X=$r['latitude'] . "," . $r['longitude'];
+        $ts=$r['ts'];
+        echo $ts . "Z," . $X . "\n";
+ //echo $hourMin . "T" . $mm . ":" . $ss . "Z," . $X . "\n";
+        echo "\n";
+        }
+        } else {
+        echo "0 results";
+        }
+
+echo "<pre>Time, Latitude, Longitude";
+echo "\n";
+
+//while($r = mysql_fetch_array($sth)) {
+
+//    $X =  $r['s1'] . "," . $r['s2'] . "," . $r['s3'];
+//    $ts= $r['ts'];
+//    echo $ts . "Z," . $X . "\n";
+    //echo $hourMin . "T" . $mm . ":" . $ss . "Z," . $X . "\n";
+//    echo "\n";
+//}
+
+mysqli_close($conn);
+echo "</pre>";
+
+?>
+
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+<script>
+
+Highcharts.chart('container', {
+    chart: {
+        type: 'line'
+    },
+    data: {
+        enablePolling: true,
+        csvURL: 'http://www.robotica.ufscar.br/~raul/mapa/html/live.php'
+    },
+    title: {
+        text: 'Coordenadas GPS x Tempo'
+    },
+    yAxis: {
+        title: {
+            text: 'Latitude/Longitude'
+        }
+    }
+});
+
+</script>
+
+
+//========================================================
+Map
+//========================================================
+
+
+<script>
+var x = 20;
+var y = 20;
+var timer;
+var xmlHttp = null;
+
+function getPosition()
+{
+    var Url = "/pos.php";
+
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = ProcessRequest;
+    xmlHttp.open( "GET", Url, true );
+    xmlHttp.send( null );
+}
+
+function ProcessRequest()
+{
+    if ( xmlHttp.readyState == 4 && xmlHttp.status == 200 )
+    {
+            document.getElementById("response").innerHTML = xmlHttp.responseText;
+            var res = (xmlHttp.responseText).split(",");
+            x = res[0];
+            y = res[1];
+            tid = res[2];
+            ofi = res[3];
+            ti = res[4];
+            document.getElementById("xy").innerHTML = "x: " + x + " y: " + y;
+            document.getElementById("oficina").innerHTML = ofi;
+            document.getElementById("beacon").innerHTML = tid;
+            document.getElementById("updated").innerHTML = ti;
+        }
+}
+
+function Draw(){
+
+  var img = document.getElementById("theImg");
+  var cnvs = document.getElementById("myCanvas");
+  cnvs.style.position = "absolute";
+  cnvs.style.left = img.offsetLeft + "px";
+  cnvs.style.top = img.offsetTop + "px";
+
+  var ctx = cnvs.getContext("2d");
+  ctx.clearRect(0,0, cnvs.width, cnvs.height);
+  ctx.beginPath();
+  ctx.arc(x, y, 10, 0, 2 * Math.PI, true);
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = '#ff0000';
+  ctx.stroke();
+
+}
+
+
+function init() {
+        timer=setInterval(Draw(), 1000);
+        return timer;
+}
+var myVar = setInterval(function(){ myTimer() }, 1000);
+
+function myTimer() {
+    var d = new Date();
+    var t = d.toLocaleTimeString();
+    document.getElementById("demo").innerHTML = t;
+
+    Draw();
+    getPosition();
+
+}
+
+
+
+</script>
+
+<body onload="init();">
+
+<div>
+<!--  <input id='draw-btn' type='button' value='Draw' onclick='Draw()' />
+--!>
+</div>
+<img id='theImg' src='map.png'>
+<canvas id='myCanvas' width='536px' height='536px'></canvas>
+
+
+<br>
+<br>
+<table border=1>
+<tr><td>Clock</td><td> <p id="demo"></p></td></tr>
+<tr><td>From server</td><td> <p id="response"></p></td></tr>
+<tr><td>X,Y</td><td> <p id="xy"></p></td></tr>
+<tr><td>Oficina</td><td> <p id="oficina"></p></td></tr>
+<tr><td>Beacon</td><td> <p id="beacon"></p></td></tr>
+<tr><td>Updated</td><td> <p id="updated"></p></td></tr>
+</table>
+
+<br>
+<br>
+
+<a href=request.php>Solicitar transporte</a> | <a href=report.php>Relatorio</a> | <a href=mapa2.html>Mapa</a> | <a href=my.php>Database</a> | <a href=listBeacons.php> List Beacons</a>
+ 
